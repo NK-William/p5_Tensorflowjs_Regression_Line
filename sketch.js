@@ -1,15 +1,15 @@
-let xs = [];
-let ys = [];
+let x_vals = [];
+let y_vals = [];
 
 let m, b;
 
 // Training meaning: minimize the loss() function with the optimizer, adjusting m and b based on that.
-const learningRate = 0.2;
+const learningRate = 0.5;
 const optimizer = tf.train.sgd(learningRate);
 
 function loss(pred, labels) {
-  // pred are y values from predict function.
-  // labels are the actual y values.
+  // pred are y values(in tensors) from predict function.
+  // labels(in tensors) are the actual y values.
    return pred.sub(labels).square().mean()
   };
 
@@ -20,13 +20,13 @@ function setup() {
   b = tf.variable(tf.scalar(random(1)));
 }
 
-function predict(xs){
-  const tfxs = tf.tensor1d(xs);
+function predict(x_vals){
+  const tfxs = tf.tensor1d(x_vals);
 
   // y = mx + b;
-  const ys = tfxs.mul(m).add(b);
+  const Pred_tf_ys = tfxs.mul(m).add(b);
 
-  return ys;
+  return Pred_tf_ys;
 }
 
 function mousePressed(){
@@ -34,20 +34,44 @@ function mousePressed(){
  let x = map(mouseX, 0, width, 0, 1);
  let y = map(mouseY, 0, height, 1, 0);
 
-  xs.push(x);
-  ys.push(y);
+  x_vals.push(x);
+  y_vals.push(y);
 }
 
 function draw(){
 
+  if(x_vals.length > 0){
+    const label_tf_ys = tf.tensor1d(y_vals);
+    // train the model
+  // minimize (f, returnCost?, varList?)
+    // Note: Here the "varList?" in the parameter are not specified, so it defaults to all trainable variables(m and b(tf.variable))
+    // since list is not provided.
+  optimizer.minimize(() => loss(predict(x_vals), label_tf_ys));
+  }
+  
   background(0);
 
   stroke(255);
   strokeWeight(8);
-  for(let i = 0; i < xs.length; i++){
-    let px = map(xs[i], 0, 1, 0, width);
-    let py = map(ys[i], 0, 1, height, 0);
+  for(let i = 0; i < x_vals.length; i++){
+    let px = map(x_vals[i], 0, 1, 0, width);
+    let py = map(y_vals[i], 0, 1, height, 0);
     point(px, py);
   }
+
+  const xs = [0, 1];
+  const ys = predict(xs);
+  // ys.print();
+
+  let x1 = map(xs[0], 0, 1, 0, width);
+  let x2 = map(xs[1], 0, 1, 0, width);
+
+  let lineY = ys.dataSync();
+  let y1 = map(lineY[0], 0, 1, height, 0);
+  let y2 = map(lineY[1], 0, 1, height, 0);
+
+  strokeWeight(2);
+  line(x1, y1, x2, y2);
+
 }
 
