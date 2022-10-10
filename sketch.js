@@ -16,8 +16,8 @@ function loss(pred, labels) {
 function setup() {
   createCanvas(400, 400);
 
-  m = tf.variable(tf.scalar(random(1)));
-  b = tf.variable(tf.scalar(random(1)));
+  m = tf.variable(tf.scalar(random(1))); // don't clear the variable from the memory(this is what we are adjusting during training).
+  b = tf.variable(tf.scalar(random(1))); // don't clear the variable from the memory(this is what we are adjusting during training).
 }
 
 function predict(x_vals){
@@ -40,6 +40,7 @@ function mousePressed(){
 
 function draw(){
 
+  tf.tidy(() => {
   if(x_vals.length > 0){
     const label_tf_ys = tf.tensor1d(y_vals);
     // train the model
@@ -48,6 +49,7 @@ function draw(){
     // since list is not provided.
   optimizer.minimize(() => loss(predict(x_vals), label_tf_ys));
   }
+});
   
   background(0);
 
@@ -59,19 +61,20 @@ function draw(){
     point(px, py);
   }
 
-  const xs = [0, 1];
-  const ys = predict(xs);
+ 
+  const lineX = [0, 1];
+  const ys = tf.tidy(() => predict(lineX));
+  let lineY = ys.dataSync();
+  ys.dispose();
   // ys.print();
 
-  let x1 = map(xs[0], 0, 1, 0, width);
-  let x2 = map(xs[1], 0, 1, 0, width);
+  let x1 = map(lineX[0], 0, 1, 0, width);
+  let x2 = map(lineX[1], 0, 1, 0, width);
 
-  let lineY = ys.dataSync();
   let y1 = map(lineY[0], 0, 1, height, 0);
   let y2 = map(lineY[1], 0, 1, height, 0);
 
   strokeWeight(2);
   line(x1, y1, x2, y2);
-
 }
 
