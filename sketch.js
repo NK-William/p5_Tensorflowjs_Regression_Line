@@ -1,11 +1,11 @@
 let x_vals = [];
 let y_vals = [];
 
-let a, b, c;
+let m, b;
 
 // Training meaning: minimize the loss() function with the optimizer, adjusting m and b based on that.
-const learningRate = 0.1;
-const optimizer = tf.train.adam(learningRate);
+const learningRate = 0.5;
+const optimizer = tf.train.sgd(learningRate);
 
 function loss(pred, labels) {
   // pred are y values(in tensors) from predict function.
@@ -16,27 +16,23 @@ function loss(pred, labels) {
 function setup() {
   createCanvas(400, 400);
 
-  a = tf.variable(tf.scalar(random(-1, 1))); // don't clear the variable from the memory(this is what we are adjusting during training).
-  b = tf.variable(tf.scalar(random(-1, 1))); // don't clear the variable from the memory(this is what we are adjusting during training).
-  c = tf.variable(tf.scalar(random(-1, 1))); // don't clear the variable from the memory(this is what we are adjusting during training).
+  m = tf.variable(tf.scalar(random(1))); // don't clear the variable from the memory(this is what we are adjusting during training).
+  b = tf.variable(tf.scalar(random(1))); // don't clear the variable from the memory(this is what we are adjusting during training).
 }
 
 function predict(x_vals){
   const tfxs = tf.tensor1d(x_vals);
 
-  /*// y = mx + b;
-  const Pred_tf_ys = tfxs.mul(m).add(b);*/
-
- // y = ax^2 + bx + c
- const Pred_tf_ys = tfxs.square().mul(a).add(tfxs.mul(b)).add(c);
+  // y = mx + b;
+  const Pred_tf_ys = tfxs.mul(m).add(b);
 
   return Pred_tf_ys;
 }
 
 function mousePressed(){
   // setting scalers -> x-axis will range from 0 - 1 and  y-axis will also range from 0 - 1.
- let x = map(mouseX, 0, width, -1, 1);
- let y = map(mouseY, 0, height, 1, -1);
+ let x = map(mouseX, 0, width, 0, 1);
+ let y = map(mouseY, 0, height, 1, 0);
 
   x_vals.push(x);
   y_vals.push(y);
@@ -60,44 +56,25 @@ function draw(){
   stroke(255);
   strokeWeight(8);
   for(let i = 0; i < x_vals.length; i++){
-    let px = map(x_vals[i], -1, 1, 0, width);
-    let py = map(y_vals[i], -1, 1, height, 0);
+    let px = map(x_vals[i], 0, 1, 0, width);
+    let py = map(y_vals[i], 0, 1, height, 0);
     point(px, py);
   }
 
  
-  const curveX = [];
-  for(let x = -1; x < 1.01; x += 0.05){
-    curveX.push(x)
-  }
-  
-
-
-  const ys = tf.tidy(() => predict(curveX));
-  let curveY = ys.dataSync();
+  const lineX = [0, 1];
+  const ys = tf.tidy(() => predict(lineX));
+  let lineY = ys.dataSync();
   ys.dispose();
-  
-  // draw a quadratic curve
-  beginShape();
-  noFill();
-  stroke(255);
-  strokeWeight(2);
-  for(let i = 0; i < curveX.length; i++){
-    let x = map(curveX[i], -1, 1, 0, width);
-    let y = map(curveY[i], -1, 1, height, 0);
-    vertex(x, y);
-  }
+  // ys.print();
 
-  endShape();
+  let x1 = map(lineX[0], 0, 1, 0, width);
+  let x2 = map(lineX[1], 0, 1, 0, width);
 
-  /* this was working for linear regressio
-  let x1 = map(lineX[0], -1, 1, 0, width);
-  let x2 = map(lineX[1], -1, 1, 0, width);
-
-  let y1 = map(lineY[0], -1, 1, height, 0);
-  let y2 = map(lineY[1], -1, 1, height, 0);
+  let y1 = map(lineY[0], 0, 1, height, 0);
+  let y2 = map(lineY[1], 0, 1, height, 0);
 
   strokeWeight(2);
-  line(x1, y1, x2, y2);*/
+  line(x1, y1, x2, y2);
 }
 
