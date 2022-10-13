@@ -36,16 +36,30 @@ model.compile({
 });
 
 const xs = tf.tensor2d([
-    [0.25, 0.92],
-    [0.12, 0.3],
-    [0.1, 0.22]]);
+    [0, 0.1],
+    [0.2, 0.3],
+    [0.4, 0.5]]);
 
 const ys = tf.tensor2d([
-        [0.20, 0.02, 0.02],
-        [0.12, 0.31, 0.22],
-        [0.08, 0.91, 0.10]]);
+        [0, 0.2, 0.3],
+        [0.4, 0.6, 0.7],
+        [0.8, 0.10, 0.11]]);
 
-model.fit(xs, ys).then(response => console.log(response.history))
+train().then(() => {
+    let outputs = model.predict(xs);
+    outputs.print(); 
+});
+
+async function train(){
+    for(i = 0; i < 1000; i++){
+    const config = {
+        shuffle: true,
+        epochs: 10
+    }
+    const response = await model.fit(xs, ys, config);
+    console.log(response.history.loss[0]);
+    }
+}
 
 /* const inputs = tf.tensor2d([
     [0.25, 0.92],
